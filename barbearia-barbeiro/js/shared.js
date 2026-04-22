@@ -1,5 +1,5 @@
 // shared.js — estado compartilhado via API
-const API = 'http://localhost:3001/api';
+const API = 'https://barbearia-app-dx1x.onrender.com/api';
 
 const SERVICES = [
   { name: 'Corte',    price: 35,  icon: '✂️',  desc: 'Corte tradicional ou moderno' },
