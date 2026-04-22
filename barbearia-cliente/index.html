@@ -124,6 +124,19 @@
         <p>Acompanhe seus horários</p>
       </div>
     </div>
+
+    <!-- BUSCA POR TELEFONE -->
+    <div id="apptSearch">
+      <div class="search-box">
+        <p class="search-desc">Digite seu WhatsApp para ver seus agendamentos</p>
+        <div class="input-group">
+          <label class="input-label">Seu WhatsApp (com DDD)</label>
+          <input class="input-field" type="tel" id="searchPhone" placeholder="(11) 99999-9999" oninput="onSearchInput()" onkeydown="if(event.key==='Enter') searchAppts()" />
+        </div>
+        <button class="btn btn-primary" id="searchBtn" onclick="searchAppts()" disabled style="width:100%;margin:12px 0 0;">Buscar meus horários</button>
+      </div>
+    </div>
+
     <div id="clientApptList"></div>
   </div>
 

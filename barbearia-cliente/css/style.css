@@ -150,3 +150,7 @@ body { background: var(--black); color: var(--text); font-family: system-ui, san
 .wpp-info { margin: 12px 16px; background: rgba(37,211,102,.08); border: .5px solid rgba(37,211,102,.3); border-radius: 10px; padding: 12px 14px; display: flex; align-items: flex-start; gap: 10px; }
 .wpp-info-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
 .wpp-info p    { font-size: 13px; color: #7CDBA4; line-height: 1.5; }
+
+/* BUSCA POR TELEFONE */
+.search-box { margin: 20px 16px; background: var(--surface); border: .5px solid var(--border); border-radius: 12px; padding: 20px; }
+.search-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 16px; line-height: 1.5; text-align: center; }

@@ -151,15 +151,30 @@ function resetForm() {
   document.getElementById('bookBtn').textContent = 'Confirmar agendamento';
 }
 
-async function renderClientAppts() {
+// ── BUSCA POR TELEFONE ────────────────────────────────
+function onSearchInput() {
+  const val = document.getElementById('searchPhone').value.trim();
+  document.getElementById('searchBtn').disabled = val.length < 8;
+}
+
+async function searchAppts() {
+  const raw   = document.getElementById('searchPhone').value.trim();
+  const phone = raw.replace(/\D/g, '');
+  if (phone.length < 8) return;
+
   const el = document.getElementById('clientApptList');
-  el.innerHTML = '<div class="empty-state">Carregando...</div>';
+  el.innerHTML = '<div class="empty-state">Buscando...</div>';
+
   try {
-    const bookings = await loadBookings();
+    const all      = await loadBookings();
+    // Compara apenas os dígitos do telefone (ignora formatação)
+    const bookings = all.filter(b => b.phone && b.phone.replace(/\D/g,'').includes(phone));
+
     if (!bookings.length) {
-      el.innerHTML = '<div class="empty-state">Nenhum agendamento ainda.<br>Faça seu primeiro horário!</div>';
+      el.innerHTML = '<div class="empty-state">Nenhum agendamento encontrado para este número.<br>Verifique o WhatsApp digitado.</div>';
       return;
     }
+
     el.innerHTML = [...bookings].reverse().map(b => {
       const svc   = SERVICES[b.service_idx];
       const badge = b.status === 'confirmed' ? 'badge-confirmed' : b.status === 'cancelled' ? 'badge-cancelled' : 'badge-pending';
@@ -174,19 +189,28 @@ async function renderClientAppts() {
         <div class="appt-row">Total: <span>R$ ${b.price}</span></div>
         <div class="appt-row">Código: <span class="gold-text">${b.id}</span></div>
         ${b.status !== 'cancelled'
-          ? `<div class="appt-actions"><button class="appt-btn appt-btn-cancel" onclick="cancelAppt('${b.id}')">Cancelar agendamento</button></div>` : ''}
+          ? `<div class="appt-actions"><button class="appt-btn appt-btn-cancel" onclick="cancelAppt('${b.id}', '${phone}')">Cancelar agendamento</button></div>` : ''}
       </div>`;
     }).join('');
   } catch {
-    el.innerHTML = '<div class="empty-state">Erro ao carregar. Verifique se o servidor está rodando.</div>';
+    el.innerHTML = '<div class="empty-state">Erro ao buscar. Tente novamente.</div>';
   }
 }
 
-async function cancelAppt(id) {
+async function cancelAppt(id, phone) {
   if (!confirm('Deseja cancelar este agendamento?')) return;
   await updateBookingStatus(id, 'cancelled');
-  renderClientAppts();
+  // Rebusca pelo mesmo telefone após cancelar
+  await searchAppts();
   showToast('❌ Cancelado', 'Agendamento cancelado.');
+}
+
+// Mantido para compatibilidade (chamado no goTo)
+async function renderClientAppts() {
+  // Limpa resultado anterior ao trocar de aba
+  document.getElementById('clientApptList').innerHTML = '';
+  document.getElementById('searchPhone').value = '';
+  document.getElementById('searchBtn').disabled = true;
 }
 
 // Polling: atualiza slots a cada 60s enquanto está na tela de agendamento
