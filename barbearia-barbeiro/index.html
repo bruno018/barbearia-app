@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Barbearia Silva — Barbeiro</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="app">
+
+  <!-- TOAST -->
+  <div class="notif-toast" id="notifToast">
+    <div class="notif-icon">💈</div>
+    <div class="notif-body">
+      <p id="notifTitle"></p>
+      <span id="notifMsg"></span>
+    </div>
+  </div>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-logo">💈</div>
+    <div>
+      <h1>Painel do Barbeiro</h1>
+      <p>Barbearia Silva</p>
+    </div>
+    <div class="live-badge">
+      <span class="live-dot"></span>ao vivo
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-val" id="statToday">0</div>
+      <div class="stat-label">Hoje</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statPending">0</div>
+      <div class="stat-label">Pendentes</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-val" id="statConfirmed">0</div>
+      <div class="stat-label">Confirmados</div>
+    </div>
+    <div class="stat-card highlight">
+      <div class="stat-val" id="statRevenue">R$&nbsp;0</div>
+      <div class="stat-label">Receita</div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-pending" onclick="switchTab('pending')">Pendentes</button>
+    <button class="tab-btn" id="tab-today"   onclick="switchTab('today')">Hoje</button>
+    <button class="tab-btn" id="tab-all"     onclick="switchTab('all')">Todos</button>
+  </div>
+
+  <!-- LIST -->
+  <div id="apptList" style="padding-bottom: 32px;"></div>
+
+</div>
+
+<script src="js/shared.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
