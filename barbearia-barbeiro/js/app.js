@@ -96,7 +96,7 @@ async function sendWpp(id) {
 }
 
 // Polling: atualiza a cada 5s automaticamente
-setInterval(() => { renderAppts(); renderStats(); }, 5000);
+setInterval(() => { renderAppts(); renderStats(); }, 60000);
 
 renderStats();
 renderAppts();
