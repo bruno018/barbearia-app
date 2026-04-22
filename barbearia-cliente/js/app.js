@@ -14,7 +14,7 @@ function goTo(view) {
   if (view === 'home')  { renderDates(); renderSlots(); }
 }
 
-function showToast(title, msg, duration = 5000) {
+function showToast(title, msg, duration = 30000) {
   document.getElementById('notifTitle').textContent = title;
   document.getElementById('notifMsg').textContent   = msg;
   const t = document.getElementById('notifToast');
