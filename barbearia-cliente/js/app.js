@@ -14,7 +14,7 @@ function goTo(view) {
   if (view === 'home')  { renderDates(); renderSlots(); }
 }
 
-function showToast(title, msg, duration = 5000) {
+function showToast(title, msg, duration = 30000) {
   document.getElementById('notifTitle').textContent = title;
   document.getElementById('notifMsg').textContent   = msg;
   const t = document.getElementById('notifToast');
@@ -174,11 +174,11 @@ async function cancelAppt(id) {
   showToast('❌ Cancelado', 'Agendamento cancelado.');
 }
 
-// Polling: atualiza slots a cada 10s enquanto está na tela de agendamento
+// Polling: atualiza slots a cada 60s enquanto está na tela de agendamento
 setInterval(() => {
   const home = document.getElementById('view-home');
   if (home && home.classList.contains('active') && selectedDate) renderSlots();
-}, 10000);
+}, 60000);
 
 renderDates();
 renderSlots();
