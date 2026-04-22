@@ -14,7 +14,7 @@ function goTo(view) {
   if (view === 'home')  { renderDates(); renderSlots(); }
 }
 
-function showToast(title, msg, duration = 30000) {
+function showToast(title, msg, duration = 5000) {
   document.getElementById('notifTitle').textContent = title;
   document.getElementById('notifMsg').textContent   = msg;
   const t = document.getElementById('notifToast');
@@ -42,12 +42,27 @@ async function renderSlots() {
     return;
   }
   document.getElementById('slotsGrid').innerHTML = '<p class="hint">Carregando...</p>';
-  const taken = await getSlotsTaken(selectedDate);
+  const taken   = await getSlotsTaken(selectedDate);
+  const isToday = selectedDate === new Date().toDateString();
+  const now     = new Date();
+
   document.getElementById('slotsGrid').innerHTML = ALL_SLOTS.map(s => {
     const busy = taken.includes(s);
-    return `<div class="slot${busy ? ' unavailable' : ''}${selectedSlot === s ? ' selected' : ''}"
-                 onclick="${busy ? '' : `selectSlot('${s}')`}">
-              ${s}${busy ? '<span class="slot-tag">Ocupado</span>' : ''}
+
+    let passed = false;
+    if (isToday) {
+      const [h, m] = s.split(':').map(Number);
+      const slotTime = new Date();
+      slotTime.setHours(h, m, 0, 0);
+      passed = slotTime <= now;
+    }
+
+    const unavailable = busy || passed;
+    const tag = busy ? 'Ocupado' : passed ? 'Encerrado' : '';
+
+    return `<div class="slot${unavailable ? ' unavailable' : ''}${selectedSlot === s ? ' selected' : ''}"
+                 onclick="${unavailable ? '' : `selectSlot('${s}')`}">
+              ${s}${tag ? `<span class="slot-tag">${tag}</span>` : ''}
             </div>`;
   }).join('');
 }
