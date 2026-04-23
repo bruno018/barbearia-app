@@ -146,7 +146,7 @@ async function downloadPDF() {
   doc.setTextColor(245, 236, 215);
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
-  doc.text('Barbearia Silva', margin, 12);
+  doc.text('Barbearia', margin, 12);
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
   doc.text('Relatorio do Dia — ' + dateLabel, margin, 20);
