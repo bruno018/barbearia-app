@@ -39,7 +39,7 @@
   <!-- VIEW: AGENDAR -->
   <div class="view active" id="view-home">
     <div class="header">
-      <div class="header-logo">✂️</div>
+      <div class="header-logo"><img src="" alt=""></div>
       <div>
         <h1>Barbearia Diego Nascimento</h1>
         <p>Agende seu horário</p>
@@ -49,12 +49,25 @@
     <div class="section-header">Serviço</div>
 
     <div class="service-card" id="svc-0" onclick="selectService(0)">
-      <div class="service-icon"></div>
+      <div class="service-icon">✂️</div>
       <div class="service-info">
-        <div class="service-name">Corte</div>
-        <div class="service-desc">Corte tradicional ou moderno</div>
+        <div class="service-name">Corte Social</div>
+        <div class="service-desc">Corte social simples</div>
         <div class="service-meta">
-          <span class="service-price">R$ 35</span>
+          <span class="service-price">R$ 25</span>
+          <span class="service-time">40 min</span>
+        </div>
+      </div>
+      <div class="service-check" id="chk-0"></div>
+    </div>
+
+    <div class="service-card" id="svc-0" onclick="selectService(0)">
+      <div class="service-icon">✂️</div>
+      <div class="service-info">
+        <div class="service-name">Corte Degradê</div>
+        <div class="service-desc">Corte degradê moderno</div>
+        <div class="service-meta">
+          <span class="service-price">R$ 30</span>
           <span class="service-time">40 min</span>
         </div>
       </div>
@@ -62,12 +75,12 @@
     </div>
 
     <div class="service-card" id="svc-1" onclick="selectService(1)">
-      <div class="service-icon"></div>
+      <div class="service-icon">✂️</div>
       <div class="service-info">
         <div class="service-name">Barba</div>
         <div class="service-desc">Aparar, modelar e hidratar</div>
         <div class="service-meta">
-          <span class="service-price">R$ 25</span>
+          <span class="service-price">R$ 20</span>
           <span class="service-time">40 min</span>
         </div>
       </div>
@@ -75,17 +88,57 @@
     </div>
 
     <div class="service-card" id="svc-2" onclick="selectService(2)">
-      <div class="service-icon"></div>
+      <div class="service-icon">✂️</div>
       <div class="service-info">
         <div class="service-name">Completo</div>
         <div class="service-desc">Corte + Barba + Sobrancelha</div>
         <div class="service-meta">
-          <span class="service-price">R$ 65</span>
+          <span class="service-price">R$ 60</span>
           <span class="service-time">40 min</span>
         </div>
       </div>
       <div class="service-check" id="chk-2"></div>
     </div>
+
+    <div class="service-card" id="svc-1" onclick="selectService(1)">
+      <div class="service-icon">✂️</div>
+      <div class="service-info">
+        <div class="service-name">Sobrancelha</div>
+        <div class="service-desc">Modelagem de sobrancelha</div>
+        <div class="service-meta">
+          <span class="service-price">R$ 10</span>
+          <span class="service-time">40 min</span>
+        </div>
+      </div>
+      <div class="service-check" id="chk-1"></div>
+    </div>
+
+    <div class="service-card" id="svc-1" onclick="selectService(1)">
+      <div class="service-icon">✂️</div>
+      <div class="service-info">
+        <div class="service-name">Risco</div>
+        <div class="service-desc">Risco moderno</div>
+        <div class="service-meta">
+          <span class="service-price">R$ 10</span>
+          <span class="service-time">40 min</span>
+        </div>
+      </div>
+      <div class="service-check" id="chk-1"></div>
+    </div>
+
+    <div class="service-card" id="svc-1" onclick="selectService(1)">
+      <div class="service-icon">✂️</div>
+      <div class="service-info">
+        <div class="service-name">Pezinho</div>
+        <div class="service-desc">Pezinho</div>
+        <div class="service-meta">
+          <span class="service-price">R$ 10</span>
+          <span class="service-time">40 min</span>
+        </div>
+      </div>
+      <div class="service-check" id="chk-1"></div>
+    </div>
+
 
     <div class="divider"></div>
     <div class="section-header">Data</div>
@@ -109,7 +162,7 @@
 
     <div class="wpp-info">
       <div class="wpp-info-icon">💬</div>
-      <p>Informe seu WhatsApp para receber a confirmação e um lembrete do seu horário.</p>
+      <p>Informe seu WhatsApp para receber a confirmação do seu horário. <strong>Sempre chegue com 10 minutos de antecedência</strong></p>
     </div>
 
     <button class="btn btn-primary" id="bookBtn" onclick="openModal()" disabled>Confirmar agendamento</button>
