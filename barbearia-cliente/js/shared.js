@@ -2,14 +2,18 @@
 const API = 'https://barbearia-app-dx1x.onrender.com/api';
 
 const SERVICES = [
-  { name: 'Corte',    price: 35,  icon: '✂️',  desc: 'Corte tradicional ou moderno' },
-  { name: 'Barba',    price: 25,  icon: '🪒',  desc: 'Aparar, modelar e hidratar' },
-  { name: 'Completo', price: 65,  icon: '⭐',  desc: 'Corte + Barba + Sobrancelha' }
+  { name: 'Corte Social', price: 25, icon: '✂️',  desc: 'Corte social clássico' },
+  { name: 'Degradê',      price: 30, icon: '💈',  desc: 'Degradê moderno' },
+  { name: 'Barba',        price: 20, icon: '🪒',  desc: 'Aparar, modelar e hidratar' },
+  { name: 'Sobrancelha',  price: 10, icon: '👁️', desc: 'Design de sobrancelha' },
+  { name: 'Risco',        price: 10, icon: '✏️',  desc: 'Risco no corte' },
+  { name: 'Pezinho',      price: 10, icon: '🔪',  desc: 'Acabamento no pezinho' },
+  { name: 'Completo',     price: 60, icon: '⭐',  desc: 'Corte + Barba + Sobrancelha' }
 ];
 
 const ALL_SLOTS = [
-  '09:00','09:40','10:20','11:00','11:40','12:20',
-  '13:00','13:40','14:20','15:00','15:40','16:20','17:00','17:40','18:20','19:00','19:40'
+  '09:00','09:40','10:20','11:00','11:40',
+  '13:40','14:20','15:00','15:40','16:20','17:00','17:40','18:20','19:00','19:40'
 ];
 
 function getDates(count = 7) {
