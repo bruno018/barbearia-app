@@ -101,30 +101,6 @@ setInterval(() => { renderAppts(); renderStats(); }, 30000);
 renderStats();
 renderAppts();
 
-// ── ZERAR O DIA ────────────────────────────────────────
-async function resetDay() {
-  const today = new Date().toDateString();
-  const todayLabel = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' });
-
-  if (!confirm(`Zerar todos os agendamentos de hoje (${todayLabel})?\n\nEsta ação cancela todos os horários do dia atual.`)) return;
-
-  const all = await loadBookings();
-  const todayList = all.filter(b => b.date_key === today && b.status !== 'cancelled');
-
-  if (!todayList.length) {
-    showToast('ℹ️ Nada para zerar', 'Não há agendamentos ativos hoje.');
-    return;
-  }
-
-  for (const b of todayList) {
-    await updateBookingStatus(b.id, 'cancelled');
-  }
-
-  showToast('✅ Dia zerado!', `${todayList.length} agendamento(s) cancelado(s).`);
-  renderAppts();
-  renderStats();
-}
-
 // ── DOWNLOAD PDF ───────────────────────────────────────
 async function downloadPDF() {
   const all = await loadBookings();
