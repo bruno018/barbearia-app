@@ -87,3 +87,9 @@ body { background: var(--black); color: var(--text); font-family: system-ui, san
 .action-btn-pdf:hover { background: rgba(196,154,108,.28); }
 .action-btn-reset { background: rgba(160,30,30,.15); color: #F07070; border: .5px solid rgba(160,30,30,.3); }
 .action-btn-reset:hover { background: rgba(160,30,30,.28); }
+
+.logotipo {
+  width: 45px;
+  height: 45px;
+  border-radius: 100px;
+}
