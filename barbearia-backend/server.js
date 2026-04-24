@@ -125,15 +125,20 @@ app.patch('/api/agendamentos/:id/status', async (req, res) => {
 // ── CRON: lembrete 15 min antes ───────────────────────
 // Roda a cada minuto, verifica agendamentos nos próximos 16 min
 cron.schedule('* * * * *', async () => {
-  const upcoming = db.getUpcomingReminders(16 * 60 * 1000);
-  for (const b of upcoming) {
-    if (!b.phone) continue;
-    try {
-      const result = await wpp.send(b.phone, wpp.msgLembrete15min(b));
-      console.log(`📨 Lembrete enviado para ${b.client_name} (${b.slot}) — modo: ${result.mode}`);
-    } catch (err) {
-      console.error(`Erro lembrete ${b.id}:`, err.message);
+  try {
+    const upcoming = await db.getUpcomingReminders(16 * 60 * 1000);
+    if (!Array.isArray(upcoming)) return;
+    for (const b of upcoming) {
+      if (!b.phone) continue;
+      try {
+        const result = await wpp.send(b.phone, wpp.msgLembrete15min(b));
+        console.log(`📨 Lembrete enviado para ${b.client_name} (${b.slot}) — modo: ${result.mode}`);
+      } catch (err) {
+        console.error(`Erro lembrete ${b.id}:`, err.message);
+      }
     }
+  } catch (err) {
+    console.error('Cron erro:', err.message);
   }
 });
 
