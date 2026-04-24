@@ -121,12 +121,7 @@ async function finalizeBooking() {
   try {
     const result = await createBooking(booking);
 
-    // Se backend retornou link wa.me para o cliente, abre
-    if (result.whatsapp?.link) {
-      setTimeout(() => window.open(result.whatsapp.link, '_blank'), 1000);
-    }
-
-    // Notifica o barbeiro (Diego) via WhatsApp
+    // Monta o link do botão WhatsApp para o Diego
     const msgDiego =
       `💈 *Novo agendamento!*\n\n` +
       `👤 *Cliente:* ${booking.name}\n` +
@@ -136,9 +131,8 @@ async function finalizeBooking() {
       `💰 *Valor:* R$ ${svc.price}\n` +
       `📱 *WhatsApp:* ${phone || 'Não informado'}\n` +
       `🔑 *Código:* ${code}`;
-    setTimeout(() => {
-      window.open(buildWhatsAppLink('5516992063543', msgDiego), '_blank');
-    }, 1500);
+    const wppBtn = document.getElementById('wppDiegoBtn');
+    if (wppBtn) wppBtn.href = buildWhatsAppLink('5516992063543', msgDiego);
 
     document.getElementById('bookingCode').textContent = code;
     document.getElementById('successDetails').innerHTML =
