@@ -29,8 +29,9 @@ function generateCode() { return 'BS' + Math.floor(1000 + Math.random() * 9000);
 
 async function getSlotsTaken(dateKey) {
   try {
-    const res = await fetch(`${API}/slots?date=${encodeURIComponent(dateKey)}`);
-    return (await res.json()).taken || [];
+    const res  = await fetch(`${API}/slots?date=${encodeURIComponent(dateKey)}`);
+    const data = await res.json();
+    return Array.isArray(data.taken) ? data.taken : [];
   } catch { return []; }
 }
 

@@ -14,7 +14,7 @@ function goTo(view) {
   if (view === 'home')  { renderDates(); renderSlots(); }
 }
 
-function showToast(title, msg, duration = 30000) {
+function showToast(title, msg, duration = 5000) {
   document.getElementById('notifTitle').textContent = title;
   document.getElementById('notifMsg').textContent   = msg;
   const t = document.getElementById('notifToast');
@@ -42,7 +42,8 @@ async function renderSlots() {
     return;
   }
   document.getElementById('slotsGrid').innerHTML = '<p class="hint">Carregando...</p>';
-  const taken   = await getSlotsTaken(selectedDate);
+  const raw     = await getSlotsTaken(selectedDate);
+  const taken   = Array.isArray(raw) ? raw : [];
   const isToday = selectedDate === new Date().toDateString();
   const now     = new Date();
 
@@ -213,11 +214,11 @@ async function renderClientAppts() {
   document.getElementById('searchBtn').disabled = true;
 }
 
-// Polling: atualiza slots a cada 60s enquanto está na tela de agendamento
+// Polling: atualiza slots a cada 10s enquanto está na tela de agendamento
 setInterval(() => {
   const home = document.getElementById('view-home');
   if (home && home.classList.contains('active') && selectedDate) renderSlots();
-}, 60000);
+}, 10000);
 
 renderDates();
 renderSlots();
