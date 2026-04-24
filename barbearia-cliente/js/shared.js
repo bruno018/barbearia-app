@@ -2,13 +2,13 @@
 const API = 'https://barbearia-app-dx1x.onrender.com/api';
 
 const SERVICES = [
-  { name: 'Corte Social', price: 25, icon: '✂️',  desc: 'Corte social clássico' },
-  { name: 'Degradê',      price: 30, icon: '💈',  desc: 'Degradê moderno' },
-  { name: 'Barba',        price: 20, icon: '🪒',  desc: 'Aparar, modelar e hidratar' },
-  { name: 'Sobrancelha',  price: 10, icon: '👁️', desc: 'Design de sobrancelha' },
-  { name: 'Risco',        price: 10, icon: '✏️',  desc: 'Risco no corte' },
-  { name: 'Pezinho',      price: 10, icon: '🔪',  desc: 'Acabamento no pezinho' },
-  { name: 'Completo',     price: 60, icon: '⭐',  desc: 'Corte + Barba + Sobrancelha' }
+  { name: 'Corte Social', price: 25, icon: '💈', desc: 'Corte social clássico',      duration: '40 min' },
+  { name: 'Degradê',      price: 30, icon: '💈', desc: 'Degradê moderno',             duration: '40 min' },
+  { name: 'Barba',        price: 20, icon: '💈', desc: 'Aparar, modelar e hidratar',  duration: '30 min' },
+  { name: 'Sobrancelha',  price: 10, icon: '💈', desc: 'Design de sobrancelha',       duration: '20 min' },
+  { name: 'Risco',        price: 10, icon: '💈', desc: 'Risco no corte',              duration: '15 min' },
+  { name: 'Pezinho',      price: 10, icon: '💈', desc: 'Acabamento no pezinho',       duration: '15 min' },
+  { name: 'Completo',     price: 60, icon: '💈', desc: 'Corte + Barba + Sobrancelha', duration: '40 min' }
 ];
 
 const ALL_SLOTS = [

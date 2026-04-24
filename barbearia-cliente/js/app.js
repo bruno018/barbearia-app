@@ -89,11 +89,12 @@ function openModal() {
   if (!name) return;
   const svc  = SERVICES[selectedService];
   const date = getDates().find(d => d.key === selectedDate);
-  document.getElementById('mService').textContent = svc.icon + ' ' + svc.name;
-  document.getElementById('mDate').textContent    = date.label + ' ' + date.num + '/' + date.month;
-  document.getElementById('mTime').textContent    = selectedSlot;
-  document.getElementById('mName').textContent    = name;
-  document.getElementById('mPrice').textContent   = 'R$ ' + svc.price;
+  document.getElementById('mService').textContent  = '💈 ' + svc.name;
+  document.getElementById('mDate').textContent     = date.label + ' ' + date.num + '/' + date.month;
+  document.getElementById('mTime').textContent     = selectedSlot;
+  document.getElementById('mDuration').textContent = svc.duration || '40 min';
+  document.getElementById('mName').textContent     = name;
+  document.getElementById('mPrice').textContent    = 'R$ ' + svc.price;
   document.getElementById('confirmModal').classList.add('show');
 }
 
