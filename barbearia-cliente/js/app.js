@@ -143,6 +143,22 @@ async function finalizeBooking() {
 
     resetForm();
     goTo('success');
+
+    // Contador regressivo de 30 segundos
+    let countdown = 30;
+    const timerEl = document.getElementById('successTimer');
+    if (timerEl) timerEl.innerHTML = `Voltando ao início em <strong>${countdown}s</strong>`;
+    const countInterval = setInterval(() => {
+      countdown--;
+      if (timerEl) timerEl.innerHTML = `Voltando ao início em <strong>${countdown}s</strong>`;
+      if (countdown <= 0) {
+        clearInterval(countInterval);
+        const successView = document.getElementById('view-success');
+        if (successView && successView.classList.contains('active')) {
+          goTo('home');
+        }
+      }
+    }, 1000);
   } catch (err) {
     showToast('❌ Erro', err.message);
     document.getElementById('bookBtn').disabled  = false;

@@ -81,7 +81,7 @@
         <div class="service-desc">Aparar, modelar e hidratar</div>
         <div class="service-meta">
           <span class="service-price">R$ 20</span>
-          <span class="service-time">40 min</span>
+          <span class="service-time">30 min</span>
         </div>
       </div>
       <div class="service-check" id="chk-2"></div>
@@ -94,7 +94,7 @@
         <div class="service-desc">Design de sobrancelha</div>
         <div class="service-meta">
           <span class="service-price">R$ 10</span>
-          <span class="service-time">40 min</span>
+          <span class="service-time">20 min</span>
         </div>
       </div>
       <div class="service-check" id="chk-3"></div>
@@ -107,7 +107,7 @@
         <div class="service-desc">Risco no corte</div>
         <div class="service-meta">
           <span class="service-price">R$ 10</span>
-          <span class="service-time">40 min</span>
+          <span class="service-time">15 min</span>
         </div>
       </div>
       <div class="service-check" id="chk-4"></div>
@@ -120,7 +120,7 @@
         <div class="service-desc">Acabamento no pezinho</div>
         <div class="service-meta">
           <span class="service-price">R$ 10</span>
-          <span class="service-time">40 min</span>
+          <span class="service-time">15 min</span>
         </div>
       </div>
       <div class="service-check" id="chk-5"></div>
@@ -161,7 +161,7 @@
 
     <div class="wpp-info">
       <div class="wpp-info-icon">💬</div>
-      <p>Informe seu WhatsApp para receber a confirmação do seu horário.<strong>Procure chegar com 10 minutos de antecedência</strong>.</p>
+      <p>Informe seu WhatsApp para receber a confirmação e um lembrete <strong>15 minutos antes</strong> do seu horário.</p>
     </div>
 
     <button class="btn btn-primary" id="bookBtn" onclick="openModal()" disabled>Confirmar agendamento</button>
@@ -197,7 +197,7 @@
     <div class="success-screen">
       <div class="success-icon">✅</div>
       <h2>Agendado com sucesso!</h2>
-      <p>Você receberá um lembrete pelo WhatsApp confirmando seu horário.</p>
+      <p>Você receberá um lembrete pelo WhatsApp 15 minutos antes do horário.</p>
       <p style="margin-bottom:20px;">Aguarde a confirmação do barbeiro.</p>
       <div class="success-code">
         <div class="label">Código do agendamento</div>
@@ -210,6 +210,7 @@
       </a>
       <button class="btn btn-primary" onclick="goTo('home')" style="width:100%;margin:0 0 10px;">Novo agendamento</button>
       <button class="btn btn-outline" onclick="goTo('appts')" style="width:100%;margin:0;">Ver meus horários</button>
+      <p class="success-timer" id="successTimer">Voltando ao início em <strong>30s</strong></p>
     </div>
   </div>
 
