@@ -91,7 +91,7 @@ async function sendWpp(id) {
   const b    = all.find(x => x.id === id);
   if (!b || !b.phone) { alert('Cliente sem WhatsApp cadastrado.'); return; }
   const svc  = SERVICES[b.service_idx];
-  const msg  = `💈 *Barbearia Silva*\n\nOlá ${b.client_name}! Lembrando do seu horário:\n\n${svc ? svc.icon : '✂️'} ${b.service} — ${b.slot}\n📅 ${b.date_label}`;
+  const msg  = `💈 *Barbearia Diego Nascimento*\n\nOlá ${b.client_name}! Lembrando do seu horário:\n\n${svc ? svc.icon : '✂️'} ${b.service} — ${b.slot}\n📅 ${b.date_label}`;
   window.open(buildWhatsAppLink(b.phone, msg), '_blank');
 }
 
@@ -145,7 +145,7 @@ async function downloadMonthlyPDF() {
   doc.setTextColor(245, 236, 215);
   doc.setFontSize(18);
   doc.setFont('helvetica', 'bold');
-  doc.text('Barbearia Silva', margin, 13);
+  doc.text('Barbearia Diego Nascimento', margin, 13);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
   doc.text('Relatorio Mensal — ' + monthName.charAt(0).toUpperCase() + monthName.slice(1), margin, 23);
