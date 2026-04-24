@@ -47,8 +47,8 @@ app.get('/api/agendamentos', (req, res) => {
 });
 
 // GET /api/agendamentos/:id
-app.get('/api/agendamentos/:id', (req, res) => {
-  const b = db.findById(req.params.id);
+app.get('/api/agendamentos/:id', async (req, res) => {
+  const b = await db.findById(req.params.id);
   if (!b) return res.status(404).json({ error: 'Não encontrado' });
   res.json(b);
 });
@@ -63,8 +63,8 @@ app.post('/api/agendamentos', async (req, res) => {
   }
 
   // Verifica se o horário já está ocupado
-  const taken = db.getSlotsTaken(date);
-  if (taken.includes(slot)) {
+  const taken = await db.getSlotsTaken(date);
+  if (Array.isArray(taken) && taken.includes(slot)) {
     return res.status(409).json({ error: 'Horário já reservado' });
   }
 
@@ -75,7 +75,7 @@ app.post('/api/agendamentos', async (req, res) => {
     createdAt: new Date().toISOString()
   };
 
-  db.insert(booking);
+  await db.insert(booking);
 
   // Envia confirmação via WhatsApp se tiver telefone
   let wppResult = null;
@@ -101,10 +101,10 @@ app.patch('/api/agendamentos/:id/status', async (req, res) => {
     return res.status(400).json({ error: 'Status inválido' });
   }
 
-  const b = db.findById(req.params.id);
+  const b = await db.findById(req.params.id);
   if (!b) return res.status(404).json({ error: 'Não encontrado' });
 
-  db.updateStatus(req.params.id, status);
+  await db.updateStatus(req.params.id, status);
 
   // Notifica cliente via WhatsApp
   let wppResult = null;
