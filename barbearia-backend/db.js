@@ -1,34 +1,13 @@
-// db.js — banco de dados SQLite (sql.js, puro JS, sem compilação)
-const initSqlJs = require('sql.js');
-const fs        = require('fs');
-const path      = require('path');
+// db.js — banco de dados PostgreSQL (Supabase)
+const { Pool } = require('pg');
 
-const DB_PATH = path.join(__dirname, 'data', 'barbearia.db');
-
-let db = null;
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
 async function getDb() {
-  if (db) return db;
-
-  const SQL = await initSqlJs();
-
-  // Garante que a pasta /data existe
-  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
-
-  // Carrega banco existente ou cria novo
-  if (fs.existsSync(DB_PATH)) {
-    const fileBuffer = fs.readFileSync(DB_PATH);
-    db = new SQL.Database(fileBuffer);
-  } else {
-    db = new SQL.Database();
-  }
-
-  createTables();
-  return db;
-}
-
-function createTables() {
-  db.run(`
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS agendamentos (
       id          TEXT PRIMARY KEY,
       service     TEXT NOT NULL,
@@ -38,103 +17,66 @@ function createTables() {
       date_label  TEXT NOT NULL,
       slot        TEXT NOT NULL,
       client_name TEXT NOT NULL,
-      phone       TEXT,
+      phone       TEXT DEFAULT '',
       status      TEXT NOT NULL DEFAULT 'pending',
       created_at  TEXT NOT NULL
     )
   `);
+  console.log('✅ Banco de dados pronto (Supabase PostgreSQL)');
 }
 
-// Persiste o banco em disco após cada escrita
-function persist() {
-  const data = db.export();
-  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
-  fs.writeFileSync(DB_PATH, Buffer.from(data));
+async function listAll() {
+  const r = await pool.query('SELECT * FROM agendamentos ORDER BY date_key, slot');
+  return r.rows;
 }
 
-// ── QUERIES ────────────────────────────────────────────
-
-function all(sql, params = []) {
-  const stmt   = db.prepare(sql);
-  stmt.bind(params);
-  const rows = [];
-  while (stmt.step()) rows.push(stmt.getAsObject());
-  stmt.free();
-  return rows;
+async function listByDate(dateKey) {
+  const r = await pool.query('SELECT * FROM agendamentos WHERE date_key = $1 ORDER BY slot', [dateKey]);
+  return r.rows;
 }
 
-function get(sql, params = []) {
-  return all(sql, params)[0] || null;
+async function listPending() {
+  const r = await pool.query("SELECT * FROM agendamentos WHERE status = 'pending' ORDER BY date_key, slot");
+  return r.rows;
 }
 
-function run(sql, params = []) {
-  db.run(sql, params);
-  persist();
+async function findById(id) {
+  const r = await pool.query('SELECT * FROM agendamentos WHERE id = $1', [id]);
+  return r.rows[0] || null;
 }
 
-// ── AGENDAMENTOS ───────────────────────────────────────
-
-function listAll() {
-  return all('SELECT * FROM agendamentos ORDER BY date_key, slot');
-}
-
-function listByDate(dateKey) {
-  return all('SELECT * FROM agendamentos WHERE date_key = ? ORDER BY slot', [dateKey]);
-}
-
-function listPending() {
-  return all("SELECT * FROM agendamentos WHERE status = 'pending' ORDER BY date_key, slot");
-}
-
-function findById(id) {
-  return get('SELECT * FROM agendamentos WHERE id = ?', [id]);
-}
-
-function getSlotsTaken(dateKey) {
-  return all(
-    "SELECT slot FROM agendamentos WHERE date_key = ? AND status != 'cancelled'",
+async function getSlotsTaken(dateKey) {
+  const r = await pool.query(
+    "SELECT slot FROM agendamentos WHERE date_key = $1 AND status != 'cancelled'",
     [dateKey]
-  ).map(r => r.slot);
+  );
+  return r.rows.map(r => r.slot);
 }
 
-function insert(b) {
-  run(
+async function insert(b) {
+  await pool.query(
     `INSERT INTO agendamentos
       (id, service, service_idx, price, date_key, date_label, slot, client_name, phone, status, created_at)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
     [b.id, b.service, b.serviceIdx, b.price, b.date, b.dateLabel,
      b.slot, b.name, b.phone || '', b.status, b.createdAt]
   );
 }
 
-function updateStatus(id, status) {
-  run('UPDATE agendamentos SET status = ? WHERE id = ?', [status, id]);
+async function updateStatus(id, status) {
+  await pool.query('UPDATE agendamentos SET status = $1 WHERE id = $2', [status, id]);
 }
 
-function getUpcomingReminders(windowMs = 16 * 60 * 1000) {
-  // Busca agendamentos confirmados/pendentes nas próximas windowMs ms
-  const now     = Date.now();
-  const cutoff  = now + windowMs;
-  const all_active = all(
-    "SELECT * FROM agendamentos WHERE status != 'cancelled' AND phone != ''"
-  );
-  return all_active.filter(b => {
+async function getUpcomingReminders(windowMs = 16 * 60 * 1000) {
+  const r = await pool.query("SELECT * FROM agendamentos WHERE status != 'cancelled' AND phone != ''");
+  const now = Date.now();
+  return r.rows.filter(b => {
     const bookDate = new Date(b.date_key);
     const [h, m]   = b.slot.split(':').map(Number);
     bookDate.setHours(h, m, 0, 0);
     const diff = bookDate - now;
-    return diff > 0 && diff <= cutoff;
+    return diff > 0 && diff <= windowMs;
   });
 }
 
-module.exports = {
-  getDb,
-  listAll,
-  listByDate,
-  listPending,
-  findById,
-  getSlotsTaken,
-  insert,
-  updateStatus,
-  getUpcomingReminders
-};
+module.exports = { getDb, listAll, listByDate, listPending, findById, getSlotsTaken, insert, updateStatus, getUpcomingReminders };
