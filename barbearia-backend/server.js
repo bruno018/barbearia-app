@@ -10,14 +10,11 @@ const wpp     = require('./whatsapp');
 const app  = express();
 const PORT = process.env.PORT || 3001;
 
-// ── Middlewares ────────────────────────────────────────
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public')); // serve os apps cliente/barbeiro se quiser
 
 // ── Inicializa banco ───────────────────────────────────
 db.getDb().then(() => {
-  console.log('✅ Banco de dados pronto');
   startServer();
 }).catch(err => {
   console.error('❌ Erro ao iniciar banco:', err);
@@ -26,104 +23,122 @@ db.getDb().then(() => {
 
 // ── ROTAS ──────────────────────────────────────────────
 
-// GET /api/slots?date=Mon Apr 17 2026
-// Retorna horários ocupados para uma data
-app.get('/api/slots', (req, res) => {
-  const { date } = req.query;
-  if (!date) return res.status(400).json({ error: 'date obrigatório' });
-  const taken = db.getSlotsTaken(date);
-  res.json({ taken });
+// GET /api/slots?date=...
+app.get('/api/slots', async (req, res) => {
+  try {
+    const { date } = req.query;
+    if (!date) return res.status(400).json({ error: 'date obrigatório' });
+    const taken = await db.getSlotsTaken(date);
+    res.json({ taken });
+  } catch (err) {
+    console.error('GET /slots erro:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // GET /api/agendamentos
-// Lista todos (painel do barbeiro)
-app.get('/api/agendamentos', (req, res) => {
-  const { status, date } = req.query;
-  let list;
-  if (date)             list = db.listByDate(date);
-  else if (status === 'pending') list = db.listPending();
-  else                  list = db.listAll();
-  res.json(list);
+app.get('/api/agendamentos', async (req, res) => {
+  try {
+    const { status, date } = req.query;
+    let list;
+    if (date)                    list = await db.listByDate(date);
+    else if (status === 'pending') list = await db.listPending();
+    else                         list = await db.listAll();
+    res.json(list);
+  } catch (err) {
+    console.error('GET /agendamentos erro:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // GET /api/agendamentos/:id
 app.get('/api/agendamentos/:id', async (req, res) => {
-  const b = await db.findById(req.params.id);
-  if (!b) return res.status(404).json({ error: 'Não encontrado' });
-  res.json(b);
+  try {
+    const b = await db.findById(req.params.id);
+    if (!b) return res.status(404).json({ error: 'Não encontrado' });
+    res.json(b);
+  } catch (err) {
+    console.error('GET /agendamentos/:id erro:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// POST /api/agendamentos — cria novo agendamento
+// POST /api/agendamentos
 app.post('/api/agendamentos', async (req, res) => {
-  const { id, service, serviceIdx, price, date, dateLabel, slot, name, phone } = req.body;
+  try {
+    const { id, service, serviceIdx, price, date, dateLabel, slot, name, phone } = req.body;
 
-  // Valida campos obrigatórios
-  if (!id || !service || serviceIdx === undefined || !price || !date || !slot || !name) {
-    return res.status(400).json({ error: 'Campos obrigatórios faltando' });
-  }
-
-  // Verifica se o horário já está ocupado
-  const taken = await db.getSlotsTaken(date);
-  if (Array.isArray(taken) && taken.includes(slot)) {
-    return res.status(409).json({ error: 'Horário já reservado' });
-  }
-
-  const booking = {
-    id, service, serviceIdx, price, date, dateLabel,
-    slot, name, phone: phone || '',
-    status: 'pending',
-    createdAt: new Date().toISOString()
-  };
-
-  await db.insert(booking);
-
-  // Envia confirmação via WhatsApp se tiver telefone
-  let wppResult = null;
-  if (phone) {
-    try {
-      wppResult = await wpp.send(phone, wpp.msgConfirmacaoCliente(
-        { ...booking, client_name: name, service_idx: serviceIdx, date_label: dateLabel }
-      ));
-    } catch (err) {
-      console.error('WhatsApp erro:', err.message);
+    if (!id || !service || serviceIdx === undefined || !price || !date || !slot || !name) {
+      return res.status(400).json({ error: 'Campos obrigatórios faltando' });
     }
-  }
 
-  res.status(201).json({ booking, whatsapp: wppResult });
+    const taken = await db.getSlotsTaken(date);
+    if (Array.isArray(taken) && taken.includes(slot)) {
+      return res.status(409).json({ error: 'Horário já reservado' });
+    }
+
+    const booking = {
+      id, service, serviceIdx, price, date, dateLabel,
+      slot, name, phone: phone || '',
+      status: 'pending',
+      createdAt: new Date().toISOString()
+    };
+
+    await db.insert(booking);
+
+    let wppResult = null;
+    if (phone) {
+      try {
+        wppResult = await wpp.send(phone, wpp.msgConfirmacaoCliente(
+          { ...booking, client_name: name, service_idx: serviceIdx, date_label: dateLabel }
+        ));
+      } catch (err) {
+        console.error('WhatsApp erro:', err.message);
+      }
+    }
+
+    res.status(201).json({ booking, whatsapp: wppResult });
+  } catch (err) {
+    console.error('POST /agendamentos erro:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// PATCH /api/agendamentos/:id/status — confirmar ou cancelar
+// PATCH /api/agendamentos/:id/status
 app.patch('/api/agendamentos/:id/status', async (req, res) => {
-  const { status } = req.body;
-  const validStatus = ['pending', 'confirmed', 'cancelled'];
+  try {
+    const { status } = req.body;
+    const validStatus = ['pending', 'confirmed', 'cancelled'];
 
-  if (!validStatus.includes(status)) {
-    return res.status(400).json({ error: 'Status inválido' });
-  }
-
-  const b = await db.findById(req.params.id);
-  if (!b) return res.status(404).json({ error: 'Não encontrado' });
-
-  await db.updateStatus(req.params.id, status);
-
-  // Notifica cliente via WhatsApp
-  let wppResult = null;
-  if (b.phone) {
-    try {
-      const msg = status === 'confirmed'
-        ? wpp.msgConfirmadoBarbeiro(b)
-        : wpp.msgCancelado(b);
-      wppResult = await wpp.send(b.phone, msg);
-    } catch (err) {
-      console.error('WhatsApp erro:', err.message);
+    if (!validStatus.includes(status)) {
+      return res.status(400).json({ error: 'Status inválido' });
     }
-  }
 
-  res.json({ id: req.params.id, status, whatsapp: wppResult });
+    const b = await db.findById(req.params.id);
+    if (!b) return res.status(404).json({ error: 'Não encontrado' });
+
+    await db.updateStatus(req.params.id, status);
+
+    let wppResult = null;
+    if (b.phone) {
+      try {
+        const msg = status === 'confirmed'
+          ? wpp.msgConfirmadoBarbeiro(b)
+          : wpp.msgCancelado(b);
+        wppResult = await wpp.send(b.phone, msg);
+      } catch (err) {
+        console.error('WhatsApp erro:', err.message);
+      }
+    }
+
+    res.json({ id: req.params.id, status, whatsapp: wppResult });
+  } catch (err) {
+    console.error('PATCH /status erro:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // ── CRON: lembrete 15 min antes ───────────────────────
-// Roda a cada minuto, verifica agendamentos nos próximos 16 min
 cron.schedule('* * * * *', async () => {
   try {
     const upcoming = await db.getUpcomingReminders(16 * 60 * 1000);
@@ -132,7 +147,7 @@ cron.schedule('* * * * *', async () => {
       if (!b.phone) continue;
       try {
         const result = await wpp.send(b.phone, wpp.msgLembrete15min(b));
-        console.log(`📨 Lembrete enviado para ${b.client_name} (${b.slot}) — modo: ${result.mode}`);
+        console.log(`📨 Lembrete: ${b.client_name} às ${b.slot}`);
       } catch (err) {
         console.error(`Erro lembrete ${b.id}:`, err.message);
       }
@@ -142,7 +157,7 @@ cron.schedule('* * * * *', async () => {
   }
 });
 
-// ── Rota raiz (health check) ───────────────────────────
+// ── Health check ───────────────────────────────────────
 app.get('/', (req, res) => {
   res.json({
     status: 'ok',
@@ -162,7 +177,6 @@ app.get('/', (req, res) => {
 function startServer() {
   app.listen(PORT, () => {
     console.log(`\n🚀 Barbearia Silva API rodando em http://localhost:${PORT}`);
-    console.log(`📋 Endpoints: http://localhost:${PORT}/`);
     console.log(`💬 WhatsApp mode: ${process.env.WHATSAPP_MODE || 'link'}\n`);
   });
 }
