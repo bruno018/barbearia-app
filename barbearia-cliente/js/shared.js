@@ -18,11 +18,28 @@ const ALL_SLOTS = [
 
 function getDates(count = 7) {
   const days = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-  return Array.from({ length: count }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() + i);
-    return { label: i === 0 ? 'Hoje' : days[d.getDay()], num: d.getDate(), month: d.getMonth()+1, key: d.toDateString() };
-  });
+  const dates = [];
+  let d = new Date();
+  let checked = 0;
+
+  while (dates.length < count) {
+    const dayOfWeek = d.getDay();
+    // Pula domingo (0) e segunda (1)
+    if (dayOfWeek !== 0 && dayOfWeek !== 1) {
+      const isToday = checked === 0 && new Date().toDateString() === d.toDateString();
+      dates.push({
+        label: isToday ? 'Hoje' : days[dayOfWeek],
+        num:   d.getDate(),
+        month: d.getMonth() + 1,
+        key:   d.toDateString()
+      });
+    }
+    checked++;
+    d = new Date();
+    d.setDate(new Date().getDate() + checked);
+  }
+
+  return dates;
 }
 
 function generateCode() { return 'BS' + Math.floor(1000 + Math.random() * 9000); }

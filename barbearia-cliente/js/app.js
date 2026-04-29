@@ -41,7 +41,7 @@ async function renderSlots() {
     document.getElementById('slotsGrid').innerHTML = '<p class="hint">Selecione uma data primeiro</p>';
     return;
   }
-  document.getElementById('slotsGrid').innerHTML = '<p class="hint">Carregando...</p>';
+  document.getElementById('slotsGrid').innerHTML = '<p class="hint">Carregando horários...</p>';
   const raw     = await getSlotsTaken(selectedDate);
   const taken   = Array.isArray(raw) ? raw : [];
   const isToday = selectedDate === new Date().toDateString();
