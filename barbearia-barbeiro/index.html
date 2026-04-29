@@ -7,7 +7,25 @@
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
-<div class="app">
+
+<!-- TELA DE SENHA -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">💈</div>
+    <h2 class="login-title">Barbearia Diego Nascimento</h2>
+    <p class="login-sub">Painel exclusivo do barbeiro</p>
+    <div class="login-input-wrap">
+      <input class="login-input" type="password" id="loginPassword"
+        placeholder="Digite a senha"
+        onkeydown="if(event.key==='Enter') checkLogin()"
+        oninput="document.getElementById('loginError').style.display='none'" />
+    </div>
+    <p class="login-error" id="loginError">Senha incorreta. Tente novamente.</p>
+    <button class="login-btn" onclick="checkLogin()">Entrar</button>
+  </div>
+</div>
+
+<div class="app" id="mainApp" style="display:none;">
 
   <!-- TOAST -->
   <div class="notif-toast" id="notifToast">
@@ -51,13 +69,13 @@
   </div>
 
   <!-- SELETOR DE MÊS + BOTÃO RELATÓRIO -->
-<div class="action-btns">
-  <select id="monthSelector" class="month-select"></select>
-  <button class="action-btn action-btn-pdf" onclick="downloadMonthlyPDF()">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-    Relatório Mensal
-  </button>
-</div>
+  <div class="action-btns">
+    <select id="monthSelector" class="month-select"></select>
+    <button class="action-btn action-btn-pdf" onclick="downloadMonthlyPDF()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Relatório Mensal
+    </button>
+  </div>
 
   <!-- TABS -->
   <div class="tabs">
@@ -70,6 +88,76 @@
   <div id="apptList" style="padding-bottom: 32px;"></div>
 
 </div>
+
+<style>
+/* LOGIN SCREEN */
+#loginScreen {
+  position: fixed; inset: 0;
+  background: #0D0D0D;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 999; padding: 24px;
+}
+.login-box {
+  background: #1A1A1A;
+  border: .5px solid rgba(196,154,108,.3);
+  border-radius: 16px;
+  padding: 36px 28px;
+  width: 100%; max-width: 360px;
+  text-align: center;
+}
+.login-logo {
+  font-size: 40px; margin-bottom: 14px;
+}
+.login-title {
+  font-size: 17px; font-weight: 500;
+  color: #C49A6C; margin-bottom: 6px;
+}
+.login-sub {
+  font-size: 13px; color: #A09080; margin-bottom: 24px;
+}
+.login-input-wrap { margin-bottom: 8px; }
+.login-input {
+  width: 100%; background: #242424;
+  border: .5px solid rgba(196,154,108,.25);
+  border-radius: 10px; padding: 13px 16px;
+  color: #F5ECD7; font-size: 15px;
+  outline: none; font-family: inherit;
+  text-align: center; letter-spacing: 4px;
+}
+.login-input:focus { border-color: #6B3A2A; }
+.login-error {
+  font-size: 12px; color: #F07070;
+  margin-bottom: 16px; display: none;
+}
+.login-btn {
+  width: 100%; background: #6B3A2A;
+  color: #F5ECD7; border: none;
+  border-radius: 10px; padding: 14px;
+  font-size: 15px; font-weight: 500;
+  cursor: pointer; transition: background .15s;
+}
+.login-btn:hover { background: #8B5E3C; }
+</style>
+
+<script>
+  const SENHA = 'diego2026';
+
+  function checkLogin() {
+    const input = document.getElementById('loginPassword').value;
+    if (input === SENHA) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('mainApp').style.display = 'block';
+      // Inicia o app após login
+      renderStats();
+      renderAppts();
+      buildMonthSelector();
+    } else {
+      document.getElementById('loginError').style.display = 'block';
+      document.getElementById('loginPassword').value = '';
+      document.getElementById('loginPassword').focus();
+    }
+  }
+</script>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="js/shared.js"></script>
