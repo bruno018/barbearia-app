@@ -93,3 +93,6 @@ body { background: var(--black); color: var(--text); font-family: system-ui, san
   height: 45px;
   border-radius: 100px;
 }
+
+.month-select { flex: 1; background: var(--surface2); border: .5px solid var(--border-hi); border-radius: 10px; padding: 11px 12px; color: var(--text); font-size: 13px; font-weight: 500; cursor: pointer; outline: none; }
+.month-select:focus { border-color: var(--brown); }

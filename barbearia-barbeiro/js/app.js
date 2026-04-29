@@ -44,7 +44,7 @@ async function renderAppts() {
 
     el.innerHTML = list.map(b => {
       const svc   = SERVICES[b.service_idx];
-      const icon  = svc ? svc.icon : '✂️';
+      const icon  = svc ? svc.icon : '💈';
       const badge = b.status === 'confirmed' ? 'badge-confirmed' : b.status === 'cancelled' ? 'badge-cancelled' : 'badge-pending';
       const label = b.status === 'confirmed' ? 'Confirmado' : b.status === 'cancelled' ? 'Cancelado' : 'Aguardando';
       const wppLink = b.phone ? buildWhatsAppLink(b.phone, `Olá ${b.client_name}!`) : null;
@@ -91,39 +91,53 @@ async function sendWpp(id) {
   const b    = all.find(x => x.id === id);
   if (!b || !b.phone) { alert('Cliente sem WhatsApp cadastrado.'); return; }
   const svc  = SERVICES[b.service_idx];
-  const msg  = `💈 *Barbearia Diego Nascimento*\n\nOlá ${b.client_name}! Lembrando do seu horário:\n\n${svc ? svc.icon : '✂️'} ${b.service} — ${b.slot}\n📅 ${b.date_label}`;
+  const msg  = `💈 *Barbearia Diego Nascimento*\n\nOlá ${b.client_name}! Lembrando do seu horário:\n\n${svc ? svc.icon : '💈'} ${b.service} — ${b.slot}\n📅 ${b.date_label}`;
   window.open(buildWhatsAppLink(b.phone, msg), '_blank');
 }
 
-// Polling: atualiza a cada 5s automaticamente
-setInterval(() => { renderAppts(); renderStats(); }, 30000);
+// ── SELETOR DE MÊS ─────────────────────────────────────
+function buildMonthSelector() {
+  const sel  = document.getElementById('monthSelector');
+  const now  = new Date();
+  const opts = [];
 
-renderStats();
-renderAppts();
+  // Últimos 12 meses incluindo o atual
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const value = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const label = d.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+    const labelFmt = label.charAt(0).toUpperCase() + label.slice(1);
+    opts.push(`<option value="${value}"${i === 0 ? ' selected' : ''}>${labelFmt}</option>`);
+  }
 
-// ── RELATÓRIO MENSAL ───────────────────────────────────
+  sel.innerHTML = opts.join('');
+}
+
+// ── RELATÓRIO MENSAL ────────────────────────────────────
 async function downloadMonthlyPDF() {
+  const sel      = document.getElementById('monthSelector');
+  const [selYear, selMonth] = sel.value.split('-').map(Number);
+  const selMonthIdx = selMonth - 1; // 0-indexed
+
   showToast('⏳ Gerando...', 'Aguarde um momento.');
 
   const all = await loadBookings();
 
-  // Mês atual
-  const now        = new Date();
-  const thisMonth  = now.getMonth();
-  const thisYear   = now.getFullYear();
-  const monthName  = now.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-
-  // Filtra agendamentos do mês atual
+  // Filtra pelo mês selecionado
   const monthly = all.filter(b => {
     const d = new Date(b.date_key);
-    return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+    return d.getMonth() === selMonthIdx && d.getFullYear() === selYear;
   });
 
-  const confirmed  = monthly.filter(b => b.status === 'confirmed');
-  const cancelled  = monthly.filter(b => b.status === 'cancelled');
-  const pending    = monthly.filter(b => b.status === 'pending');
-  const revenue    = confirmed.reduce((s, b) => s + Number(b.price), 0);
-  const lostRev    = cancelled.reduce((s, b) => s + Number(b.price), 0);
+  const monthLabel = new Date(selYear, selMonthIdx, 1)
+    .toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+  const monthName = monthLabel.charAt(0).toUpperCase() + monthLabel.slice(1);
+
+  const confirmed = monthly.filter(b => b.status === 'confirmed');
+  const cancelled = monthly.filter(b => b.status === 'cancelled');
+  const pending   = monthly.filter(b => b.status === 'pending');
+  const revenue   = confirmed.reduce((s, b) => s + Number(b.price), 0);
+  const lostRev   = cancelled.reduce((s, b) => s + Number(b.price), 0);
 
   // Contagem por serviço
   const svcCount = {};
@@ -137,6 +151,7 @@ async function downloadMonthlyPDF() {
   const doc    = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
   const W      = 210;
   const margin = 14;
+  const now    = new Date();
   let y        = 0;
 
   // ── Cabeçalho ──────────────────────────────────────
@@ -148,11 +163,22 @@ async function downloadMonthlyPDF() {
   doc.text('Barbearia Diego Nascimento', margin, 13);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'normal');
-  doc.text('Relatorio Mensal — ' + monthName.charAt(0).toUpperCase() + monthName.slice(1), margin, 23);
+  doc.text('Relatorio Mensal — ' + monthName, margin, 23);
   doc.setFontSize(8);
   doc.text('Gerado em ' + now.toLocaleString('pt-BR'), W - margin, 28, { align: 'right' });
 
   y = 42;
+
+  // Sem dados
+  if (!monthly.length) {
+    doc.setTextColor(160, 140, 120);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'italic');
+    doc.text('Nenhum agendamento encontrado para ' + monthName + '.', margin, y + 10);
+    doc.save(`relatorio-${sel.value}.pdf`);
+    showToast('📄 PDF gerado!', `Nenhum dado em ${monthName}`);
+    return;
+  }
 
   // ── Resumo geral ────────────────────────────────────
   doc.setFillColor(245, 240, 235);
@@ -168,8 +194,6 @@ async function downloadMonthlyPDF() {
 
   doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-
-  // Linha 1
   doc.setTextColor(30, 100, 60);
   doc.text('Confirmados: ' + confirmed.length, margin + 5, y + 20);
   doc.setTextColor(160, 100, 20);
@@ -177,7 +201,6 @@ async function downloadMonthlyPDF() {
   doc.setTextColor(160, 30, 30);
   doc.text('Cancelados: ' + cancelled.length, margin + 120, y + 20);
 
-  // Linha 2
   doc.setTextColor(107, 58, 42);
   doc.setFontSize(10);
   doc.setFont('helvetica', 'bold');
@@ -191,24 +214,23 @@ async function downloadMonthlyPDF() {
 
   y += 50;
 
-  // ── Resumo por serviço ──────────────────────────────
+  // ── Por serviço ─────────────────────────────────────
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(60, 30, 15);
   doc.text('Por Servico', margin, y);
   y += 6;
 
-  // Header tabela serviços
   doc.setFillColor(107, 58, 42);
   doc.rect(margin, y, W - margin * 2, 8, 'F');
   doc.setTextColor(245, 236, 215);
   doc.setFontSize(8.5);
   doc.setFont('helvetica', 'bold');
-  doc.text('Servico',      margin + 3,   y + 5.5);
-  doc.text('Confirmados',  margin + 62,  y + 5.5);
-  doc.text('Cancelados',   margin + 100, y + 5.5);
-  doc.text('Pendentes',    margin + 135, y + 5.5);
-  doc.text('Receita',      margin + 158, y + 5.5);
+  doc.text('Servico',     margin + 3,   y + 5.5);
+  doc.text('Confirmados', margin + 62,  y + 5.5);
+  doc.text('Cancelados',  margin + 100, y + 5.5);
+  doc.text('Pendentes',   margin + 135, y + 5.5);
+  doc.text('Receita',     margin + 158, y + 5.5);
   y += 8;
 
   Object.entries(svcCount).forEach(([name, data], i) => {
@@ -218,54 +240,50 @@ async function downloadMonthlyPDF() {
     doc.setTextColor(40, 20, 10);
     doc.setFontSize(8.5);
     doc.setFont('helvetica', 'normal');
-    doc.text(name,                           margin + 3,   y + 5.5);
+    doc.text(name,                        margin + 3,   y + 5.5);
     doc.setTextColor(30, 100, 60);
-    doc.text(String(data.confirmed || 0),    margin + 72,  y + 5.5);
+    doc.text(String(data.confirmed || 0), margin + 72,  y + 5.5);
     doc.setTextColor(160, 30, 30);
-    doc.text(String(data.cancelled || 0),    margin + 110, y + 5.5);
+    doc.text(String(data.cancelled || 0), margin + 110, y + 5.5);
     doc.setTextColor(160, 100, 20);
-    doc.text(String(data.pending || 0),      margin + 145, y + 5.5);
+    doc.text(String(data.pending || 0),   margin + 145, y + 5.5);
     doc.setTextColor(107, 58, 42);
     doc.setFont('helvetica', 'bold');
-    doc.text('R$ ' + (data.revenue || 0),    margin + 158, y + 5.5);
+    doc.text('R$ ' + (data.revenue || 0), margin + 158, y + 5.5);
     y += 8;
   });
 
   y += 10;
 
-  // ── Lista completa de agendamentos ─────────────────
+  // ── Lista completa ──────────────────────────────────
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(60, 30, 15);
   doc.text('Todos os Agendamentos', margin, y);
   y += 6;
 
-  // Header tabela completa
   doc.setFillColor(107, 58, 42);
   doc.rect(margin, y, W - margin * 2, 8, 'F');
   doc.setTextColor(245, 236, 215);
   doc.setFontSize(8);
   doc.setFont('helvetica', 'bold');
-  doc.text('Data',     margin + 3,   y + 5.5);
-  doc.text('Horario',  margin + 30,  y + 5.5);
-  doc.text('Cliente',  margin + 50,  y + 5.5);
-  doc.text('Servico',  margin + 100, y + 5.5);
-  doc.text('Valor',    margin + 138, y + 5.5);
-  doc.text('Status',   margin + 158, y + 5.5);
+  doc.text('Data',    margin + 3,   y + 5.5);
+  doc.text('Horario', margin + 30,  y + 5.5);
+  doc.text('Cliente', margin + 50,  y + 5.5);
+  doc.text('Servico', margin + 100, y + 5.5);
+  doc.text('Valor',   margin + 138, y + 5.5);
+  doc.text('Status',  margin + 158, y + 5.5);
   y += 8;
 
-  // Ordena por data/slot
   const sorted = [...monthly].sort((a, b) => {
     if (a.date_key !== b.date_key) return new Date(a.date_key) - new Date(b.date_key);
     return a.slot.localeCompare(b.slot);
   });
 
   sorted.forEach((b, i) => {
-    // Nova página se necessário
     if (y > 270) {
       doc.addPage();
       y = 20;
-      // Repete header
       doc.setFillColor(107, 58, 42);
       doc.rect(margin, y, W - margin * 2, 8, 'F');
       doc.setTextColor(245, 236, 215);
@@ -281,8 +299,7 @@ async function downloadMonthlyPDF() {
     }
 
     const rowH = 7.5;
-    const fill = i % 2 === 0 ? [255,252,248] : [245,240,235];
-    doc.setFillColor(...fill);
+    doc.setFillColor(...(i % 2 === 0 ? [255,252,248] : [245,240,235]));
     doc.rect(margin, y, W - margin * 2, rowH, 'F');
 
     const dateStr    = new Date(b.date_key).toLocaleDateString('pt-BR');
@@ -292,20 +309,20 @@ async function downloadMonthlyPDF() {
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(40, 20, 10);
-    doc.text(dateStr,    margin + 3,   y + 5);
-    doc.text(b.slot,     margin + 30,  y + 5);
-    doc.text(clientName, margin + 50,  y + 5);
-    doc.text(svcName,    margin + 100, y + 5);
-    doc.text('R$ ' + b.price, margin + 138, y + 5);
+    doc.text(dateStr,          margin + 3,   y + 5);
+    doc.text(b.slot,           margin + 30,  y + 5);
+    doc.text(clientName,       margin + 50,  y + 5);
+    doc.text(svcName,          margin + 100, y + 5);
+    doc.text('R$ ' + b.price,  margin + 138, y + 5);
 
-    if (b.status === 'confirmed')       { doc.setTextColor(30, 100, 60);   doc.text('Confirmado', margin + 158, y + 5); }
-    else if (b.status === 'cancelled')  { doc.setTextColor(160, 30, 30);   doc.text('Cancelado',  margin + 158, y + 5); }
-    else                                { doc.setTextColor(160, 100, 20);  doc.text('Pendente',   margin + 158, y + 5); }
+    if (b.status === 'confirmed')      { doc.setTextColor(30, 100, 60);  doc.text('Confirmado', margin + 158, y + 5); }
+    else if (b.status === 'cancelled') { doc.setTextColor(160, 30, 30);  doc.text('Cancelado',  margin + 158, y + 5); }
+    else                               { doc.setTextColor(160, 100, 20); doc.text('Pendente',   margin + 158, y + 5); }
 
     y += rowH;
   });
 
-  // ── Totalizador final ───────────────────────────────
+  // ── Totalizador ─────────────────────────────────────
   y += 4;
   doc.setDrawColor(196, 154, 108);
   doc.setLineWidth(0.4);
@@ -320,7 +337,15 @@ async function downloadMonthlyPDF() {
   doc.setFont('helvetica', 'normal');
   doc.text('Receita perdida com cancelamentos: R$ ' + lostRev, margin, y + 7);
 
-  const fileName = 'relatorio-mensal-' + now.toISOString().slice(0, 7) + '.pdf';
+  const fileName = `relatorio-${sel.value}.pdf`;
   doc.save(fileName);
   showToast('📄 PDF gerado!', fileName);
 }
+
+// Polling
+setInterval(() => { renderAppts(); renderStats(); }, 30000);
+
+// Init
+renderStats();
+renderAppts();
+buildMonthSelector();
